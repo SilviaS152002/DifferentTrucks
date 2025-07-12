@@ -1,0 +1,7 @@
+{
+  "manifestVersion": 1,
+  "id": "NS15.DifferentTrucks",
+  "name": "DifferentTrucks",
+  "version": "1.0",
+  "assemblies": [ "DifferentTrucks" ]
+}

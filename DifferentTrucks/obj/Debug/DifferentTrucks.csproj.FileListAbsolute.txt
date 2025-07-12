@@ -1,0 +1,10 @@
+I:\SteamLibrary\steamapps\common\Railroader\Mods\DifferentTrucks\Definition.json
+I:\SteamLibrary\steamapps\common\Railroader\Mods\DifferentTrucks\DifferentTrucks.dll
+I:\SteamLibrary\steamapps\common\Railroader\Mods\DifferentTrucks\DifferentTrucks.pdb
+I:\SteamLibrary\steamapps\common\Railroader\dev_mods\DifferentTrucks\DifferentTrucks\obj\Debug\DifferentTrucks.csproj.AssemblyReference.cache
+I:\SteamLibrary\steamapps\common\Railroader\dev_mods\DifferentTrucks\DifferentTrucks\obj\Debug\DifferentTrucks.GeneratedMSBuildEditorConfig.editorconfig
+I:\SteamLibrary\steamapps\common\Railroader\dev_mods\DifferentTrucks\DifferentTrucks\obj\Debug\DifferentTrucks.AssemblyInfoInputs.cache
+I:\SteamLibrary\steamapps\common\Railroader\dev_mods\DifferentTrucks\DifferentTrucks\obj\Debug\DifferentTrucks.AssemblyInfo.cs
+I:\SteamLibrary\steamapps\common\Railroader\dev_mods\DifferentTrucks\DifferentTrucks\obj\Debug\DifferentTrucks.csproj.CoreCompileInputs.cache
+I:\SteamLibrary\steamapps\common\Railroader\dev_mods\DifferentTrucks\DifferentTrucks\obj\Debug\DifferentTrucks.dll
+I:\SteamLibrary\steamapps\common\Railroader\dev_mods\DifferentTrucks\DifferentTrucks\obj\Debug\DifferentTrucks.pdb

@@ -1,0 +1,101 @@
+﻿using HarmonyLib;
+using Model;
+using Model.Database;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
+using System.Reflection.Emit;
+using Serilog;
+using Model.Definition.Data;
+using UnityEngine;
+
+namespace DifferentTrucks
+{
+    [HarmonyPatch(typeof(Car))]
+    static partial class CarPatch
+    {
+
+        [HarmonyPatch("SetupTrucks"), HarmonyTranspiler]
+        private static IEnumerable<CodeInstruction> SetupTrucksTranspiler(IEnumerable<CodeInstruction> instructions, ILGenerator generator)
+        {
+            Debug.Log("[DifferentTrucks] SetupTrucksTranspiler run");
+            List<CodeInstruction> InstructionList = instructions.ToList();
+            CodeInstruction searchInstruction;
+            FieldInfo sr1_target = AccessTools.Field(typeof(Car), "_truckA");
+            int sr1_index = -1;
+
+            for (int i = 0; i < InstructionList.Count(); i++)
+            {
+                searchInstruction = InstructionList[i];
+                if (searchInstruction.opcode == OpCodes.Ldfld && searchInstruction.operand is FieldInfo field && field == sr1_target)
+                {
+                    sr1_index = (i - 2) < 0 ? 0 : i - 2;
+                    break;
+                }
+            }
+            if (sr1_index == -1)
+            {
+                // Field not found, fallback to original instructions
+                foreach (CodeInstruction instruction in instructions)
+                {
+                    yield return instruction;
+                }
+                yield break;
+            }
+            Label sr1_label = InstructionList[sr1_index].labels.Count > 0 ? InstructionList[sr1_index].labels[0] : new Label();
+
+            yield return new CodeInstruction(OpCodes.Br, sr1_label);
+
+            foreach (CodeInstruction instruction in instructions)
+            {
+                yield return instruction;
+            }
+
+        }
+
+
+        [HarmonyPatch("LoadModelsAsync"), HarmonyTranspiler]
+        private static IEnumerable<CodeInstruction> LoadModelsAsyncTranspiler(IEnumerable<CodeInstruction> instructions, ILGenerator generator)
+        {
+            Debug.Log("[DifferentTrucks] LoadModelsAsyncTranspiler run");
+            List<CodeInstruction> InstructionList = instructions.ToList();
+            MethodInfo sr1_target = AccessTools.Method(typeof(string), "IsNullOrEmpty");
+            MethodInfo sr2_target = AccessTools.Method(typeof(Car), "HandleModelsLoaded");
+            MethodInfo sr2_replace = AccessTools.Method(typeof(CarPatch), "LoadTrucksAsyncTask");
+            for (int i = 0; i >= 0 && i < InstructionList.Count; i++)
+            {
+                if (InstructionList[i].opcode == OpCodes.Call && (MethodInfo)InstructionList[i].operand == sr1_target && InstructionList[i - 3].opcode == OpCodes.Ldloc_1 && InstructionList[i + 2].opcode == OpCodes.Brtrue_S)
+                {
+                    InstructionList[i - 3] = new CodeInstruction(OpCodes.Br, InstructionList[i + 2].operand);
+                    InstructionList[i - 2] = new CodeInstruction(OpCodes.Nop);
+                    InstructionList[i - 1] = new CodeInstruction(OpCodes.Nop);
+                    InstructionList[i] = new CodeInstruction(OpCodes.Nop);
+                    InstructionList[i + 1] = new CodeInstruction(OpCodes.Nop);
+                    InstructionList[i + 2] = new CodeInstruction(OpCodes.Nop);
+                    break;
+                }
+            }
+            for (int i = 0; i >= 0 && i < InstructionList.Count; i++)
+            {
+                if (InstructionList[i].opcode == OpCodes.Beq_S && InstructionList[i - 3].opcode == OpCodes.Nop)
+                {
+                    for (int j = i; j >= 0 && j < InstructionList.Count; j++)
+                    {
+                        if (InstructionList[j].opcode == OpCodes.Call && (MethodInfo)InstructionList[j].operand == sr2_target)
+                        {
+                            InstructionList.Insert(j - 1, new CodeInstruction(OpCodes.Call, sr2_replace));
+                            InstructionList.Insert(j - 1, new CodeInstruction(OpCodes.Ldloc_1));
+                            InstructionList[j - 1].labels.Add(new Label());
+                            Label sr2_Label = InstructionList[j - 1].labels[0];
+                            // What here? Which order to load stuff given it's "public static async void LoadTrucksAsyncTask(this Car __instance)"
+                            InstructionList[i - 3] = new CodeInstruction(OpCodes.Br, sr2_Label); // Originally NOP entry point to try-catch block
+                            break;
+                        }
+                    }
+                    break;
+                }
+            }
+            return InstructionList;
+        }
+    }
+}
